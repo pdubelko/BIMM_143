@@ -1,0 +1,62 @@
+---
+title: "Class 7 Functions and Packages"
+author: "Paige Dubelko"
+date: "January 29, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Functions Revisited
+```{r}
+source("http://tinyurl.com/rescale-R")
+```
+
+Lets try the rescale() function out:
+```{r}
+rescale(c(1,5,10))
+```
+Trying rescale2() to test the stop() catch for a non-numeric input:
+```{r}
+rescale2(c(1,"t", 4,5))
+```
+
+```{r}
+x <- c(1,2,NA,3,NA)
+y <- c(NA,3,NA,3,4)
+```
+
+```{r}
+is.na(x)
+sum(is.na(x))
+```
+```{r}
+is.na(x)
+is.na(y)
+is.na(x) & is.na(y)
+
+```
+
+Take snippet to make our first function...
+```{r}
+both_na <- function(x,y){
+  sum(is.na(x) & is.na(y))
+}
+```
+
+```{r}
+both_na(x,y)
+```
+Modify our method to regulate more
+```{r}
+both_na2 <- function(x,y){
+  if (length(x) != length(y)){
+    stop("Length should be same length!")
+  }
+  else{
+    sum(is.na(x) & is.na(y))
+  }
+}
+```
+

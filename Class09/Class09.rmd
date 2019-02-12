@@ -1,0 +1,200 @@
+---
+title: 'Class 9: Analysis of Human Breast Cancer Cells'
+author: "Paige Dubelko"
+date: "February 7, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Today we will be doing an unsupervising learning analysis of Human Breast Cancer Cells.
+
+We have been given this information from the *Wisconsin Breast Cancer Diagnostic Data Set*
+```{r}
+#Lets read in and save our new data directory
+wisc.df<- read.csv("WisconsinCancer.csv")
+#head(wisc.df)
+
+#if you want to see how many patients are in the data set, check num of rows
+#nrow(wisc.df)
+```
+
+We now want to convert our read in file to a matrix. 
+```{r}
+#Convert columns 3-32
+#Lets now convert the columns of data into a matrix
+wisc.data <- as.matrix(wisc.df[,3:32])
+
+```
+
+To keep track of different observations throughout modeling, assign row names of *wisc.data* to the values contained in *id* column of *wisc.df*
+```{r}
+#Assign row names
+row.names(wisc.data) <- wisc.df$id
+#head(wisc.data)
+```
+
+We now want to create a new vector **Diagnosis** that will be 1 if a diagnosis is malignant and 0 otherwise.
+```{r}
+diagnosis <- as.numeric(wisc.df$diagnosis == "M")
+```
+
+Let's explore the data a little bit.
+Q1: How many observations are in this dataset
+```{r}
+nrow(wisc.df)
+```
+Q2: How many variables/features in the data are suffixed with _mean:
+```{r}
+#Looking for columns ending w _mean
+inds <- grep("_mean", colnames(wisc.data))
+length(inds)
+```
+Q3: How many observations have malignant diagnosis?
+```{r}
+table(wisc.df$diagnosis)
+
+#or use
+
+sum(diagnosis)
+```
+
+#Section 2: Principal Component Analysis
+
+Lets first check if the data needs to be scaled.
+```{r}
+colMeans(wisc.data)
+
+apply(wisc.data,2,sd)
+```
+
+```{r}
+wisc.pr <- prcomp(wisc.data, scale = TRUE)
+
+summary(wisc.pr)
+```
+
+**Q4: From results, what proportion of the original variance is captured by the first principal components (PC1)?**
+From looking at the summary section *Proportion of Variance* we see PC1 covers 44.27%
+
+**Q5. How many principal components (PCs) are required to describe at least 70% of the original variance in the data?**
+By PC3 we see more than 70% of original variance
+
+**Q6. How many principal components (PCs) are required to describe at least 90% of the original variance in the data?**
+By PC7 we have covered 90%
+
+Now we want to interpret our PCA results:
+```{r}
+biplot(wisc.pr)
+```
+We see that rownames in the biplot make any trends very difficult to see. So it might be better to generate a standard scatter plot
+```{r}
+palette(c("royalblue", "deeppink", "red"))
+plot(wisc.pr$x[,1],wisc.pr$x[,2], col = diagnosis+1, xlab = "PC1", ylab = "PC2")
+
+```
+
+Lets see a plot of PC1 and PC3!
+```{r}
+palette(c("plum2", "powderblue"))
+plot(wisc.pr$x[,1], wisc.pr$x[,3], xlab = "PC1", ylab = "PC3", col = diagnosis + 1 )
+```
+
+Lets discuss Variance a bit more: 
+A good way to pick a natrual number of principal components is by looking at a scree plot and look for the "elbow".
+```{r}
+#Lets calculate variance of each principal component
+pr.var <- wisc.pr$sdev^2
+head(pr.var)
+```
+
+We now want to divide by the total variance of all principal components:
+```{r}
+pve <- round((pr.var/sum(pr.var))*100,1)
+
+plot(pve, xlab = "Principal Component", ylab = "Proportion of Variance Explained", ylim = c(0,100), type = "o")
+```
+
+We can also barplot this data:
+```{r}
+barplot(pve,ylab = "Precent of Variance Explained", names.arg = paste0("PC", 1:length(pve)), las = 2, axes = FALSE, col = rainbow(ncol(wisc.pr$x)))
+
+axis(2,at = pve, labels = round(pve,2)*100)
+
+```
+
+Plot the cumulative proportion of variance:
+```{r}
+plot(cumsum(pve), xlab = "Principal Component", 
+     ylab = "Cumulative Proportion of Variance Explained", 
+     ylim = c(0, 100), type = "o")
+```
+
+#Hierarchical Clustering of Case Data
+```{r}
+data.scaled <- scale(wisc.data)
+
+data.dist <- dist(data.scaled)
+
+wisc.hclust <- hclust(data.dist, method = "complete")
+```
+
+Now lets plot our clustering
+```{r}
+plot(wisc.hclust)
+
+abline(a = 19 , b = 0, col = "cornflowerblue", lty = 2)
+
+```
+
+Lets compare outputs from clustering to actual diagnoses. We will use **cutree()** to do so:
+```{r}
+wisc.hclust.clusters <- cutree(wisc.hclust, k = 3)
+```
+
+Use **table()** function to compare cluster membership:
+```{r}
+table(wisc.hclust.clusters, diagnosis)
+```
+
+##Cluster in PCA Results:
+
+For clustering we need:
+1. Distance Matrix
+2. Clustering Function
+3. Cut Tree
+```{r}
+dist.pca <- dist(wisc.pr$x[,1:2])
+
+pc.hclust <- hclust(dist.pca, method = "ward.D2")
+plot(pc.hclust)
+```
+
+```{r}
+cut.pc <- cutree(pc.hclust, k = 3)
+table(cut.pc, diagnosis)
+```
+
+```{r}
+palette(c("steelblue1", "mediumpurple1", "lightsalmon1"))
+plot(wisc.pr$x[,1:2], col = cut.pc)
+```
+
+
+##Prediction
+We are going to use function **predict()** that will take our PCA model from  before and new cancer cell data and project the data onto our PCA space.
+```{r}
+url <- "https://tinyurl.com/new-samples-CSV"
+new <- read.csv(url)
+npc <- predict(wisc.pr, newdata = new)
+```
+
+```{r}
+palette(c("darkorchid", "hotpink2"))
+plot(wisc.pr$x[,1:2], col = diagnosis+1)
+points(npc[,1], npc[,2], col = "lightgoldenrod", pch = 16, cex = 2)
+```
+
+From the data seen above, doctors should prioritize following up with the patient falling in the purple region. 

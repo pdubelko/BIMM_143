@@ -1,0 +1,56 @@
+---
+title: "SectionWorksheet.rmd"
+author: "Paige Dubelko"
+date: "January 24, 2019"
+output: html_document
+---
+## Working with the bio3d package
+To install the package, use the command **install.packages("bio3d")**.
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Try out the provided code
+```{r}
+library(bio3d)
+#Read a PDB file from the database 
+s1 <- read.pdb("4AKE")  # kinase with drug
+s2 <- read.pdb("1AKE")  # kinase no drug
+s3 <- read.pdb("1E4Y")  # kinase with drug
+
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s3, chain="A", elety="CA")
+
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor")
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+```
+
+This is my method to simplify the process above by condensing it into one method call. All that is needed is the PDB code to search the protein in the database. There are optional arguments to specify chain and elety.
+```{r}
+#Purpose: The purpose of this function is to simplify the the analysis of a protein from an online data base. By using the function we can input the PDB code and it will automatically read in the pdb, trim the file and plot the data.
+#input: PDB protein code - allows us to read the PDB file from database.
+#output: graphics from the data in the PDB file
+analyzeProtein <- function(protein, chain = "A", elety = "CA"){
+  #read in protein
+  x <- read.pdb(protein)
+  x.chain <- trim.pdb(x, chain = chain, elety = elety)
+  x.b <- x.chain$atom$b
+  #plot protein
+  plotb3(x.b, sse = x.chain, type = "l", ylab = "Bfactor")
+}
+```
+Now to test my function...
+```{r}
+analyzeProtein("4AKE")
+analyzeProtein("1AKE")  # kinase no drug
+analyzeProtein("1E4Y")
+```
+
+
+
+
