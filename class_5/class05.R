@@ -1,8 +1,8 @@
 #'---
-#'title: "Hands on Assessment: Graphs"
+#'title: "Class 5: Introduction to R Graphics"
 #'author: "Paige Dubelko"
 #'date: "January 22, 2019"
-#'output: word_document
+#'output: github_document
 #'---
 
 #Whisker plot
