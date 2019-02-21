@@ -1,0 +1,46 @@
+#################################################################
+# If you used AutoDock Vina in your work, please cite:          #
+#                                                               #
+# O. Trott, A. J. Olson,                                        #
+# AutoDock Vina: improving the speed and accuracy of docking    #
+# with a new scoring function, efficient optimization and       #
+# multithreading, Journal of Computational Chemistry 31 (2010)  #
+# 455-461                                                       #
+#                                                               #
+# DOI 10.1002/jcc.21334                                         #
+#                                                               #
+# Please see http://vina.scripps.edu for more information.      #
+#################################################################
+
+Detected 4 CPUs
+Reading input ... done.
+Setting up the scoring function ... done.
+Analyzing the binding site ... done.
+Using random seed: 2009
+Performing search ... done.
+Refining results ... done.
+
+mode |   affinity | dist from best mode
+     | (kcal/mol) | rmsd l.b.| rmsd u.b.
+-----+------------+----------+----------
+   1        -11.5      0.000      0.000
+   2        -10.3      2.054     10.250
+   3        -10.3      2.051     10.999
+   4        -10.1      2.098     10.722
+   5        -10.0      1.930     10.894
+   6        -10.0      2.047     10.246
+   7         -9.9      1.955     10.310
+   8         -9.7      1.562      4.388
+   9         -9.7      2.285      4.306
+  10         -9.7      1.753      4.272
+  11         -9.7      2.168     10.850
+  12         -9.5      2.008     10.391
+  13         -9.2      2.416      5.887
+  14         -9.1      4.325      8.236
+  15         -9.1      2.108     10.654
+  16         -9.0      2.900     11.002
+  17         -8.8      2.811      5.428
+  18         -8.7      2.634      6.631
+  19         -8.7      4.870      9.538
+  20         -8.6      5.424     11.214
+Writing output ... done.

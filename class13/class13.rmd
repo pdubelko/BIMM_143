@@ -1,0 +1,62 @@
+---
+title: "Class 13: Structure Based Drug Discovery"
+author: Paige Dubelko
+date: February 19, 2019
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Prepare HIV-Protease molecule for docking
+First get a PDB structure from the online database then clean it up for docking. 
+```{r}
+library(bio3d)
+file.name <- get.pdb("1hsg")
+```
+
+Read in PDB file, look at preview, & remove non- protein bits and will save ligand into a separate file.
+```{r}
+hiv <- read.pdb(file.name)
+hiv
+```
+
+Use *trimb.pdb()* function to trim pdbs to proteins & ligands
+```{r}
+prot <- trim.pdb(hiv, 'protein')
+lig <- trim.pdb(hiv, 'ligand')
+
+```
+
+Now write them out to new files
+```{r}
+write.pdb(prot, file = "1hsg_protein.pdb")
+write.pdb(lig, file = "1hsg_ligand.pdb")
+```
+
+##Inspecting our Docking Results
+```{r}
+res <- read.pdb("all.pdbqt", multi = TRUE)
+write.pdb(res,"results.pdb")
+```
+
+
+```{r}
+ori <- read.pdb("ligand.pdbqt")
+rmsd(ori,res)
+```
+
+
+## Normal Mode Analysis
+```{r}
+library(bio3d)
+pdb <- read.pdb("1HEL")
+
+modes <- nma(pdb)
+plot(modes)
+```
+
+```{r}
+mktrj(modes, mode = 7, file = "nma_7.pdb")
+```
+

@@ -1,0 +1,78 @@
+---
+title: "Class 14: Genome Informatics and High Throughput Sequencing"
+author: Paige Dubelko
+date: February 21, 2019
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Asthma SNPs in MXL population
+Read in the csv file we downloaded from [Ensembl](http://uswest.ensembl.org/Homo_sapiens/Variation/Sample?db=core;r=17:39894595-39895595;v=rs8067378;vdb=variation;vf=362656008#373531_tablePanel)
+```{r}
+mxl <- read.csv("class14MXL.csv", row.names = 1)
+head(mxl)
+```
+
+How many G|G genotypes are in this set? Perecent values?
+```{r}
+table(mxl$Genotype..forward.strand.)
+
+#table(mxl$Genotype..forward.strand.)/nrow(mxl)*100
+
+```
+
+## RNA-Seq
+
+Fastq quality scores
+
+Q. Does the first sequence have good quality?
+```{r}
+#install.packages("seqinr")
+#install.packages("gtools")
+
+q <- "DDDDCDEDCDDDDBBDDDCC@"
+library(seqinr)
+library(gtools)
+asc(s2c(q)) - 33 #bc of offset
+```
+
+## Population scale analysis
+
+Does the genotype for rs9067378 influence expression of the important asthema linked genes we found?
+
+```{r}
+geno <- read.table("230Samples.txt")
+head(geno)
+```
+
+Find how many patients are G|G?
+```{r}
+table(geno$geno)
+```
+
+Find expression values for G|G
+```{r}
+inds <- geno$geno == "G/G"
+summary(geno$exp[inds])
+```
+Find expression values for A|A
+```{r}
+inds.aa <- geno$geno == "A/A"
+summary(geno$exp[inds.aa])
+```
+Find expression values for A|G
+```{r}
+inds.ag <- geno$geno == "A/G"
+summary(geno$exp[inds.ag])
+```
+
+Create a figure that shows the distribution of these expression value
+```{r}
+#want expression spit by genotype
+graph <- boxplot(exp ~ geno, geno)
+```
+
+
+
