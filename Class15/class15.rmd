@@ -1,0 +1,169 @@
+---
+title: "Class 15: Transcriptomics and RNA-Seq analysis"
+author: Paige Dubelko
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#we will be using DESeq2 toay
+library(BiocInstaller)
+```
+
+##Import countData and colData into R 
+```{r}
+metaData <- read.csv("data/airway_metadata.csv", header = TRUE, stringsAsFactors = FALSE)
+counts <- read.csv("data/airway_scaledcounts.csv", stringsAsFactors = FALSE)
+#head(metaData)
+#head(counts)
+```
+
+Check for correspondance of metadata and countdata
+```{r}
+all(colnames(counts[-1]) == metaData$id)
+```
+
+Find which columns in *counts* correspond to the control conditions (i.e. no drug). Then we can calculate the mean count value for each gene.
+```{r}
+control.inds <- metaData$dex == "control"
+#head(counts[-1][,control.inds])
+
+head(counts[,metaData$id[control.inds]])
+```
+
+Calculate mean value
+```{r}
+controlMean <- rowSums(counts[,metaData$id[control.inds]])/ ncol(counts[,metaData$id[control.inds]])
+
+```
+
+Now do the same thing for the drug treated samples (i.e. *treated* columns)
+```{r}
+treated.inds <- metaData$dex == "treated"
+treated.id <- metaData$id[treated.inds]
+
+treatedMean <- rowSums(counts[,treated.id])/ncol(counts[,treated.id])
+
+```
+
+Add gene names back in 
+```{r}
+names(controlMean) <- counts$ensgene
+names(treatedMean) <- counts$ensgene
+```
+
+Combine our mean count data for control and trated into a new data.frame
+```{r}
+meancounts <- data.frame(controlMean,treatedMean)
+```
+
+Look at column summary
+```{r}
+colSums(meancounts)
+```
+
+Now we can plot the drug treated vs non-drug control count values
+```{r}
+plot(meancounts$controlMean, meancounts$treatedMean, xlab = "Control Mean",
+      ylab = "Treated Mean")
+```
+
+After seeing this plot and condensed data, lets log2 transform the data
+```{r}
+plot(meancounts$controlMean, meancounts$treatedMean, xlab = "Control Mean (log)",
+      ylab = "Treated Mean (log)", log = "xy", col = "hotpink")
+```
+
+This will show us which genes goes up when we are treating them. The drug enhances which genes.
+```{r}
+meancounts$log2fc <- log2(meancounts[,"treatedMean"]/meancounts[,"controlMean"])
+head(meancounts)
+```
+
+Remove the zero entry genes from meancount to produce **mycounts**
+```{r}
+zero.vals <- which(meancounts[,1:2] == 0, arr.ind = TRUE)
+to.rm <- unique(zero.vals[,1])
+
+mycounts <- meancounts[-to.rm,]
+head(mycounts)
+```
+
+Lets see how many of our genes are up-regulated and down-regulated
+```{r}
+up.ind <- mycounts$log2fc > 2
+down.ind <- mycounts$log2fc < -2
+```
+
+```{r}
+sum(up.ind)
+sum(down.ind)
+```
+
+There are `sum(up.ind)` up regulated genes and `sum(down.ind)` down regulated genes.
+
+To see the list of all upregulated genes: 
+```{r}
+head(mycounts[up.ind,])
+```
+
+#Add annotation data
+
+We can download a file from Ensembl
+```{r}
+anno <- read.csv("data/annotables_grch38.csv")
+head(anno)
+```
+
+We want to merge this annotation data with our mycounts data. Use **the merge()** function, x will be **mycounts** and y will be the **annotation data**
+
+```{r}
+mycounts.anno <- merge(mycounts, anno, by.x = "row.names", by.y = "ensgene" )
+head(mycounts.anno)
+```
+
+##DESeq2 Analysis
+
+Now we do this analysis properly with p-values!
+
+```{r}
+library(DESeq2)
+citation("DESeq2")
+```
+
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = counts, colData = metaData, design = ~dex,
+                                tidy = TRUE)
+dds
+```
+
+
+```{r}
+dds <- DESeq(dds)
+```
+
+```{r}
+res <- results(dds)
+res05 <- results(dds, alpha = 0.01)
+summary(res)
+```
+
+Plot a volcano graph
+```{r}
+mycols <- rep("lightblue", nrow(res))
+mycols[abs(res$log2FoldChange)>2] <- "hotpink"
+
+inds <- (res$padj < 0.01) & (abs(res$log2FoldChange) > 2)
+mycols[inds] <- "purple"
+
+plot(res$log2FoldChange, -log(res$padj), col = mycols, ylab = "-Log(P-Value)", 
+      xlab = "Log2(FoldChange)")
+
+abline(v = c(-2,2), col = "gray", lty = 2)
+abline(h = -log(0.1), col = "gray", lty = 2)
+```
+
