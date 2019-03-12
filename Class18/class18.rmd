@@ -1,0 +1,73 @@
+---
+title: "Class 18"
+author: Paige Dubelko
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(bio3d)
+```
+Read in FASTA
+```{r}
+alignment <- read.fasta("lecture18_sequences.fa")
+alignment
+```
+Use bio3d package to align fasta file
+```{r}
+names <-  rownames(alignment)
+alignedSeq <- seqaln(alignment)
+```
+
+Identify which positions have mismatches
+```{r}
+ide <- conserv(alignedSeq$ali, method = "identity")
+mutant.sites <- which(ide < 1)
+
+gaps <- gap.inspect(alignedSeq)
+mutant.sites <- mutant.sites[mutant.sites %in% gaps$f.inds]
+
+mutant.sites
+```
+
+Now extract all 9-mer mutants encompassing sequences for each mutant site. This is equivalent to finding the sequence region eight residues before and eight residues after our mutation sites.
+```{r}
+## Make a "names" label for our output sequences (one per mutant)
+mutant.names <- paste0(alignedSeq$ali["P53_wt",mutant.sites],
+                       mutant.sites,
+                       alignedSeq$ali["P53_mutant",mutant.sites])
+
+mutant.names
+```
+
+```{r}
+## Sequence positions surounding each mutant site
+start.position <- mutant.sites - 8
+end.position <-  mutant.sites + 8
+
+# Blank matrix to store sub-sequences
+store.seqs <- matrix("-", nrow=length(mutant.sites), ncol=17)
+rownames(store.seqs) <- mutant.names
+
+## Extract each sub-sequence
+for(i in 1:length(mutant.sites)) {
+  store.seqs[i,] <- alignedSeq$ali["P53_mutant",start.position[i]:end.position[i]]
+}
+
+store.seqs
+```
+
+```{r}
+#output FASTA file
+write.fasta(seqs = store.seqs, id = mutant.names, file = "subsequences.fa")
+```
+
+
+```{r}
+result <- read.csv("result.csv")
+result
+```
+
