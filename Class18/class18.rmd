@@ -1,5 +1,5 @@
 ---
-title: "Class 18"
+title: "Class 18: Cancer Genomics"
 author: Paige Dubelko
 output: github_document
 ---
