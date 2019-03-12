@@ -1,0 +1,58 @@
+---
+title: "Class 11: Structural Bioinformatics"
+author: Paige Dubelko
+date: February 14, 2019
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Section 1. The PDB
+```{r}
+pdb <- read.csv("Data Export Summary.csv", row.names = 1)
+
+```
+Let's determine the percentage of structures solved by X-Ray and Electron Microscopy.
+```{r}
+xRayPercent <- (pdb$Total[1]/ sum(pdb$Total))*100
+xRayPercent
+emPercent <- (pdb$Total[3]/sum(pdb$Total))*100
+emPercent
+```
+Another way to do this is:
+```{r}
+precent.by.method <- (pdb$Total/sum(pdb$Total))*100
+names(precent.by.method) <- rownames(pdb)
+precent.by.method
+```
+
+From the website, what proportion of structures are protein?
+```{r}
+proteinPercent <- sum(pdb$Proteins)/sum(pdb$Total)*100
+proteinPercent
+```
+
+##Getting started with Bio3D
+```{r}
+library(bio3d)
+```
+
+```{r}
+hsg <- read.pdb("1hsg")
+head(aa321(hsg$atom$resid))
+```
+
+```{r}
+prot.inds <- atom.select(hsg, string = 'protein')
+prot.inds
+lig.inds <- atom.select(hsg, string = 'ligand')
+```
+
+```{r}
+prot.pdb <- trim.pdb(hsg, prot.inds)
+write.pdb(prot.pdb, file = "protein.pdb")
+lig.pdb <- trim.pdb(hsg, lig.inds)
+write.pdb(lig.pdb, file = "ligand.pdb")
+```
+
