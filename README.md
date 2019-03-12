@@ -10,4 +10,4 @@ Work and projects from [BIMM 143](https://bioboot.github.io/bimm143_W19/) at UCS
 - Class 13: [Structure Based Drug Discovery](https://github.com/pdubelko/BIMM_143/blob/master/class13/class13.md)
 - Class 14: [Genome Informatics & High Throughput Sequencing](https://github.com/pdubelko/BIMM_143/blob/master/Class14/class14.md)
 - Class 15: [Transcriptomics & RNA-Seq Analysis](https://github.com/pdubelko/BIMM_143/blob/master/Class15/class15.md)
-- Class 18:[Cancer Genomics](https://github.com/pdubelko/BIMM_143/blob/master/Class18/class18.md)
+- Class 18: [Cancer Genomics](https://github.com/pdubelko/BIMM_143/blob/master/Class18/class18.md)
